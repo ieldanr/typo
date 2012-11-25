@@ -35,7 +35,7 @@ Given /^the blog is set up$/ do
   Blog.default.update_attributes!({:blog_name => 'Teh Blag',
                                    :base_url => 'http://localhost:3000'});
   Blog.default.save!
-  User.create!({:login => 'admin',
+  @myUser = User.create!({:login => 'admin',
                 :password => 'aaaaaaaa',
                 :email => 'joe@snow.com',
                 :profile_id => 1,
@@ -43,10 +43,70 @@ Given /^the blog is set up$/ do
                 :state => 'active'})
 end
 
+Given /^there is a non-admin user$/ do
+  @nonadminUser = User.create!({:login => 'nonadmin',
+                      :password => 'nonadmin',
+                      :email => 'a@a.com',
+                      :profile_id => 3,
+                      :name => 'nonadmin',
+                      :state => 'active'})
+end
+
+Given /^there is a non-admin user with an article$/ do
+  step "there is a non-admin user"
+  step "I am logged as a nonadmin user"
+  step "I create an article with title \"Article2\" and text \"Text from Article2\""
+  step "I logout"
+end
+
+And /^I have an article$/ do
+  step "I am logged as an admin user"
+  step "I create an article with title \"Article1\" and text \"Text from Article1\""
+  step "I logout"
+end
+
+And /^I create an article with title "(.+)" and text "(.+)"$/ do |title, text| 
+  step "I am on the new article page"
+  step "I fill in \"article_title\" with \"#{title}\""
+  step "I fill in \"article__body_and_extended_editor\" with \"#{text}\""
+  step "I press \"Publish\""
+end
+
+And /^I try to merge an article$/ do
+  @article1 = @current_user.articles[0]
+  @article2 = @myUser.articles[0]
+  visit "/admin/content/merge/#{@article1.id}?merge_with=\"#{@article2.id}\""
+  
+end
+
 And /^I am logged into the admin panel$/ do
   visit '/accounts/login'
   fill_in 'user_login', :with => 'admin'
   fill_in 'user_password', :with => 'aaaaaaaa'
+  click_button 'Login'
+  if page.respond_to? :should
+    page.should have_content('Login successful')
+  else
+    assert page.has_content?('Login successful')
+  end
+end
+
+And /^I logout$/ do
+  visit '/accounts/logout'
+  @current_user = nil
+end
+
+And /^I am logged as an? (.+) user$/ do |usertype|
+  visit '/accounts/login'
+  if usertype == 'admin'  
+    fill_in 'user_login', :with => 'admin'
+    fill_in 'user_password', :with => 'aaaaaaaa' 
+    @current_user = User.find_by_login('admin')
+  else #nonadmin
+    fill_in 'user_login', :with => 'nonadmin'
+    fill_in 'user_password', :with => 'nonadmin'  
+    @current_user = User.find_by_login('nonadmin')
+  end
   click_button 'Login'
   if page.respond_to? :should
     page.should have_content('Login successful')
