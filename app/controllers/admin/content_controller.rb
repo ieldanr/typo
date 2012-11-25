@@ -36,6 +36,16 @@ class Admin::ContentController < Admin::BaseController
     end
     new_or_edit
   end
+  
+  def merge
+    @article = Article.find(params[:id])
+    unless @article.access_by? current_user
+      redirect_to :action => 'index'
+      flash[:error] = _("Error, you are not allowed to perform this action")
+      return
+    end
+    merge_with
+  end
 
   def destroy
     @record = Article.find(params[:id])
@@ -181,6 +191,16 @@ class Admin::ContentController < Admin::BaseController
     @resources = Resource.without_images_by_filename
     @macros = TextFilter.macro_filters
     render 'new'
+  end
+
+  def merge_with
+    id = params[:id]
+    other_id = params[:merge_with]
+    @article = Article.find(id)
+    @article.merge_with(other_id)
+    Article.delete(other_id)
+    redirect_to :action => 'index'
+    return
   end
 
   def set_the_flash
