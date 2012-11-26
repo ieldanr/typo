@@ -420,6 +420,8 @@ class Article < Content
     return nil if other_article_id == nil
     otherArticle = Article.find(other_article_id)
     self.body += " " + otherArticle.body
+    self.extended += " "+otherArticle.extended
+    self.comments << otherArticle.comments
     self.save
   end
 
