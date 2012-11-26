@@ -194,6 +194,11 @@ class Admin::ContentController < Admin::BaseController
   end
 
   def merge_with
+    if not current_user.profile.label == "admin"
+      redirect_to :action => 'index'
+      flash[:error] = _("Error, you are not allowed to perform this action")
+      return
+    end
     id = params[:id]
     other_id = params[:merge_with]
     @article = Article.find(id)
