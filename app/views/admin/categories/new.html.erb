@@ -45,8 +45,8 @@
       </tr>
     </thead>
     <%= render_void_table(@categories.size, 4)  %>
-    <% for category in @categories -%>
-    <tr <%= alternate_class -%> id="category_<%= category.id -%>">
+    <% for category in @categories %>
+    <tr <%= alternate_class %> id="category_<%= category.id %>">
       <td>
         <%= link_to_edit category.name, category %><br />
         <%= show_category_actions category %>
@@ -55,6 +55,6 @@
       <td><%= category.permalink %></td>
       <td><%= h category.keywords %></td>
     </tr>
-    <% end -%>
+    <% end %>
   </table>
 </div>
